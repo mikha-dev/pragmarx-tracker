@@ -2,9 +2,16 @@
 
 namespace PragmaRX\Tracker\Vendor\Laravel\Models;
 
+use DateTimeInterface;
+
 class Log extends Base
 {
     protected $table = 'tracker_log';
+
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
 
     protected $fillable = [
         'session_id',
@@ -25,9 +32,39 @@ class Log extends Base
         return $this->belongsTo($this->getConfig()->get('session_model'));
     }
 
+    public function sessiondevice()
+    {
+        return $this->hasOneThrough($this->getConfig()->get('device_model'), $this->getConfig()->get('session_model'), 'id', 'id', 'session_id', 'device_id');
+    }
+
+    public function sessionlanguage()
+    {
+        return $this->hasOneThrough($this->getConfig()->get('language_model'), $this->getConfig()->get('session_model'), 'id', 'id', 'session_id', 'language_id');
+    }
+
+    public function sessionagent()
+    {
+        return $this->hasOneThrough($this->getConfig()->get('agent_model'), $this->getConfig()->get('session_model'), 'id', 'id', 'session_id', 'agent_id');
+    }
+
+    public function sessiongeoip()
+    {
+        return $this->hasOneThrough($this->getConfig()->get('geoip_model'), $this->getConfig()->get('session_model'), 'id', 'id', 'session_id', 'geoip_id');
+    }
+
+    public function sessionreferer()
+    {
+        return $this->hasOneThrough($this->getConfig()->get('referer_model'), $this->getConfig()->get('session_model'), 'id', 'id', 'session_id', 'referer_id');
+    }
+
     public function path()
     {
         return $this->belongsTo($this->getConfig()->get('path_model'));
+    }
+
+    public function referer()
+    {
+        return $this->belongsTo($this->getConfig()->get('referer_model'));
     }
 
     public function error()
@@ -43,6 +80,11 @@ class Log extends Base
     public function routePath()
     {
         return $this->belongsTo($this->getConfig()->get('route_path_model'), 'route_path_id');
+    }
+
+    public function route()
+    {
+        return $this->hasOneThrough($this->getConfig()->get('route_model'), $this->getConfig()->get('route_path_model'), 'id', 'id', 'route_path_id', 'route_id');
     }
 
     public function pageViews($minutes, $results)
